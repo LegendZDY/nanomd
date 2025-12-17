@@ -17,6 +17,6 @@ def isoformAS(
     threads: Annotated[int, typer.Option(help="Number of threads.")]=4,
     ):
     """
-    alternative splicing analysis.
+    Alternative splicing analysis.
     """
     minimap2(input, reference, prefix, tool, parms, threads)

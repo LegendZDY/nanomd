@@ -20,7 +20,7 @@ def detectMod(
     pvalue: Annotated[float, typer.Option("--pvalue", help="pvalue cutoff for modification sites.")]=0.98,
     ):
     """
-    detect modification sites in input fastq files.
+    Detect modification sites in input fastq files.
     """
     
     with Progress(

@@ -20,7 +20,7 @@ def nascentRNA(
     prefix: Annotated[str, typer.Option("--prefix", "-p", help="Prefix for output files.")]="prefix",
     ):
     """
-    Detect nascent RNA using mapping sam/bam file and fastq files. And quantify them using salmon.
+    Detect nascent RNA using mapping sam/bam file and fastq files.
     """
     
     with Progress(

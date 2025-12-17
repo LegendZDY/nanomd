@@ -35,7 +35,7 @@ It is recommended to use the docker or conda environment to run the pipeline.
 
 # Requirements
 
-1. Python 3.8+
+1. Python 3.10+
 2. Python modules:
     - pandas
     - numpy
