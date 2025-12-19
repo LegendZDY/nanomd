@@ -1,6 +1,6 @@
 import typer
 from .modules.gene import gene
-from .modules.isoform import isoform
+from .modules.count import count
 from .modules.matrix import matrix
 from .modules.ployA import ployA
 from .modules.detectMod import detectMod
@@ -16,7 +16,7 @@ def callback():
     """
 
 app.command(name="gene")(gene)
-app.command(name="count")(isoform)
+app.command(name="count")(count)
 app.command(name="ployA")(ployA)
 app.command(name="matrix")(matrix)
 app.command(name="isoformAS")(isoformAS)

@@ -68,7 +68,7 @@ nanomd.py is the main module of nanoMD, which includes the following sub-modules
 
 ## Usage
 
-`nanomd count -i ../input/{}/pass.fq.gz -r ../reference/fasta/transcripts.fa -o ./{}_transcripts.sam`
+`nanomd count -i ../input/{}/pass.fq.gz -r ../reference/fasta/transcripts.fa -p {}_transcripts.sam`
 
 ## nanomd ployA
 
