@@ -10,10 +10,10 @@ app = typer.Typer()
 
 @app.command()
 def ployA(
-    input: Annotated[str, typer.Option("--input", "-i", help="Input fastq or sort bam file.")],
-    transcriptome: Annotated[str, typer.Option("--transcriptome", "-f", help="Reference transcriptome fasta file path.")],
+    input: Annotated[str, typer.Option("--input", "-i", help="Input fastq or sort bam file.")],    
     output: Annotated[Path, typer.Option("--output", "-o", help="Output file path.")],
     prefix: Annotated[str, typer.Option("--prefix", "-p", help="Prefix for output files.")],
+    transcriptome: Annotated[str, typer.Option("--transcriptome", "-f", help="Reference transcriptome fasta file path.")]=None, # type: ignore
     min_a_length: Annotated[int, typer.Option("--min-a-length", "-a", help="Minimum length of ployA tail.")]=6,
     max_non_a: Annotated[int, typer.Option("--max-non-a", "-n", help="Maximum number of non-A characters in ployA tail.")]=3,
     pod5s: Annotated[str, typer.Option("--pod5s", help="Regular matching pattern for pod5 files, such as 'path/to/*pod5'.")]=None, # type: ignore
@@ -62,7 +62,7 @@ def ployA(
             progress.add_task(description="Detecting ployA Done", total=None)
         else:
             suffix=Path(input).suffix
-            if suffix == "bam":
+            if suffix == ".bam":
                 sort_bam=input
             else:
                 sort_bam=f"{output}/{prefix}_ployA.sorted.bam"
@@ -71,6 +71,7 @@ def ployA(
                 if not check_path_exists(sort_bam):
                     minimap2(input, transcriptome, sort_bam, params="-ax map-ont", threads=threads)
                 progress.add_task(description="Mapping reads to transcriptome Done", total=None)
+            
             output_ploya=f"{output}/{prefix}_ployA.tsv"
             if not check_path_exists(output_ploya):
                 ployA = ployADetector(sort_bam, output_ploya, min_a_length, max_non_a)
