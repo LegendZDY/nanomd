@@ -10,7 +10,7 @@ app = typer.Typer()
 
 @app.command()
 def ployA(
-    input: Annotated[str, typer.Option("--input", "-i", help="Input fastq file.")],
+    input: Annotated[str, typer.Option("--input", "-i", help="Input fastq or sort bam file.")],
     transcriptome: Annotated[str, typer.Option("--transcriptome", "-f", help="Reference transcriptome fasta file path.")],
     output: Annotated[Path, typer.Option("--output", "-o", help="Output file path.")],
     prefix: Annotated[str, typer.Option("--prefix", "-p", help="Prefix for output files.")],
@@ -61,13 +61,17 @@ def ployA(
                 detect_ployA(input, sort_bam, transcriptome, output_ploya, threads=threads)
             progress.add_task(description="Detecting ployA Done", total=None)
         else:
+            suffix=Path(input).suffix
+            if suffix == "bam":
+                sort_bam=input
+            else:
+                sort_bam=f"{output}/{prefix}_ployA.sorted.bam"
+                progress.add_task(description="Detecting ployA...", total=None)
+                progress.add_task(description="Mapping reads to transcriptome...", total=None)
+                if not check_path_exists(sort_bam):
+                    minimap2(input, transcriptome, sort_bam, params="-ax map-ont", threads=threads)
+                progress.add_task(description="Mapping reads to transcriptome Done", total=None)
             output_ploya=f"{output}/{prefix}_ployA.tsv"
-            sort_bam=f"{output}/{prefix}_ployA.sorted.bam"
-            progress.add_task(description="Detecting ployA...", total=None)
-            progress.add_task(description="Mapping reads to transcriptome...", total=None)
-            if not check_path_exists(sort_bam):
-                minimap2(input, transcriptome, sort_bam, params="-ax map-ont", threads=threads)
-            progress.add_task(description="Mapping reads to transcriptome Done", total=None)
             if not check_path_exists(output_ploya):
                 ployA = ployADetector(sort_bam, output_ploya, min_a_length, max_non_a)
                 ployA.analyze()
