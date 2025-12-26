@@ -52,11 +52,13 @@ def detectMod(
                          f"{output}/{prefix}_psi.bed", f"{output}/{prefix}_AtoI.bed"]
         for bed_file in bed_file_list:
             gfc_output = bed_file.replace(".bed", "_abs_dist.txt")
-            fileType = bed_file.split("_")[-1].split(".")[0]
-            plot_output = bed_file.replace(".bed", "_metagene.pdf")
             if not check_path_exists(gfc_output):
                 gfc = gene_feature_distance_calculator(bed_file, regions, gfc_output)
                 gfc.process_bed_file()
+        for bed_file in bed_file_list:
+            gfc_output = bed_file.replace(".bed", "_abs_dist.txt")
+            fileType = bed_file.split("_")[-1].split(".")[0]
+            plot_output = bed_file.replace(".bed", "_metagene.pdf")
             if not check_path_exists(plot_output):
                 if docker:
                     run_command(f"docker run -v {WKD}:/output -v {plot_script}:/scripts -w /output legendzdy/rbase:1.0.0 Rscript /scripts/metaplot.R -i /output/{gfc_output} -o /output/ -p {prefix} -t {fileType}".split())
