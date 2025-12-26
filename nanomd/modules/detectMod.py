@@ -19,7 +19,6 @@ def detectMod(
     output: Annotated[str, typer.Option("--output", "-o", help="Output file path.")]=".",
     prefix: Annotated[str, typer.Option("--prefix", "-p", help="Prefix for output files.")]="prefix",
     pvalue: Annotated[float, typer.Option("--pvalue", help="pvalue cutoff for modification sites.")]=0.98,
-    docker: Annotated[bool, typer.Option("--docker", help="Whether to run in docker container to plots.")] = False,
     ):
     """
     Detect modification sites in input fastq files.
@@ -55,15 +54,6 @@ def detectMod(
             if not check_path_exists(gfc_output):
                 gfc = gene_feature_distance_calculator(bed_file, regions, gfc_output)
                 gfc.process_bed_file()
-        for bed_file in bed_file_list:
-            gfc_output = bed_file.replace(".bed", "_abs_dist.txt")
-            fileType = bed_file.split("_")[-1].split(".")[0]
-            plot_output = bed_file.replace(".bed", "_metagene.pdf")
-            if not check_path_exists(plot_output):
-                if docker:
-                    run_command(f"docker run -v {WKD}:/output -v {plot_script}:/scripts -w /output legendzdy/rbase:1.0.0 Rscript /scripts/metaplot.R -i /output/{gfc_output} -o /output/ -p {prefix} -t {fileType}".split())
-                else:
-                    run_command(f"Rscript {plot_script}/metaplot.R -i {WKD}/{gfc_output} -o {WKD}/ -p {prefix} -t {fileType}")
         progress.add_task(description="Calculating absolute distance Done", total=None)
         
         end=time.time()
