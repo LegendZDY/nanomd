@@ -123,6 +123,9 @@ auto_meta_plot <- function(input_path, output_path, prefix, mod_type = "m6A") {
             prefix_plot = paste0(prefix, "_", group),
             plot_meta <- purrr::pmap(list(dist_measures, output_plot, prefix_plot, type), plot_metagene_Rd)
         )
+    # group plot
+    legendBaseModel::rbind_merge(sample_all, "dist_measures") %>% 
+        plot_metagene_Rd(., output_path, paste0(prefix, "_group"))
     # END
     return("sucess")},
     error = function(e){print(e$message);message(return("failled"))})
