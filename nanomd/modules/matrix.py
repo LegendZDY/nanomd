@@ -44,20 +44,17 @@ def matrix(
                 if not check_path_exists(output_tpm):
                     matrix_generate(input_dirs=inputs, control_dirs_names=control_names, output=output_tpm,
                                     count_type="TPM")
+                output_plot = f"matrix_plots"
+                if not check_path_exists(output_plot):
+                    if docker:
+                        run_command(f"docker run -v {WKD}:/output -v {plot_script}:/scripts -w /output legendzdy/rbase:1.0.0 Rscript /scripts/isoform.R -i /output/{output_count} -o /output/{output_plot} -p {prefix} -s {species} -t {type} -n {split_num}".split())
+                    else:
+                        run_command(f"Rscript {plot_script}/isoform.R -i {WKD}/{output_count} -o {WKD}/{output_plot} -p {prefix} -s {species} -t {type} -n {split_num}")
             elif type == "ployA":
                 output_count = "matrix_ployA.tsv"
                 output_lengths = "ployA_lengths.tsv"
                 if not check_path_exists(output_count) or not check_path_exists(output_lengths):
                     ployA_matrix_generate(input_files=inputs, control_filess_names=control_names, output_matrix=output_count, output_lengths=output_lengths)
-            elif type == "meta":
-                output_count = prefix
-            else:
-                print(f"Error: Unknown count type {type}")
-                exit(1)
-            progress.update(task1, advance=100)
-
-            task2 = progress.add_task(description="Generate plot...", total=100)
-            if type == "salmon" or type == "ployA":
                 output_plot = f"matrix_plots"
                 if not check_path_exists(output_plot):
                     if docker:
@@ -65,18 +62,18 @@ def matrix(
                     else:
                         run_command(f"Rscript {plot_script}/isoform.R -i {WKD}/{output_count} -o {WKD}/{output_plot} -p {prefix} -s {species} -t {type} -n {split_num}")
             elif type == "meta":
+                output_plot = f"meta_plots"
                 for fileType in ["m6A", "m5C", "psi", "AtoI"]:
-                    output_plot = f"{output_count}_{fileType}_metagene.pdf"
+                    output_plot = f"{prefix}_{fileType}_metagene.pdf"
                     if not check_path_exists(output_plot):
                         if docker:
-                            run_command(f"docker run -v {WKD}:/output -v {plot_script}:/scripts -w /output legendzdy/rbase:1.0.0 Rscript /scripts/metaplot.R -i /output -o /output -p {prefix} -t {fileType}".split())
+                            run_command(f"docker run -v {WKD}:/output -v {plot_script}:/scripts -w /output legendzdy/rbase:1.0.0 Rscript /scripts/metaplot.R -i /output -o /output/{output_plot} -p {prefix} -t {fileType}".split())
                         else:
-                            run_command(f"Rscript {plot_script}/metaplot.R -i {WKD} -o {WKD} -p {prefix} -t {fileType}")
+                            run_command(f"Rscript {plot_script}/metaplot.R -i {WKD} -o {WKD}/{output_plot} -p {prefix} -t {fileType}")
             else:
                 print(f"Error: Unknown count type {type}")
                 exit(1)
-            progress.update(task2, advance=100)
-
+            progress.update(task1, advance=100)
             end=time.time()
             time_cost=f"{(end - start) // 3600}h{((end - start) % 3600) // 60}m{(end - start) % 60:.2f}s"
             print(f"Generate count matrix and plot matrix Done, time cost: {time_cost}")
