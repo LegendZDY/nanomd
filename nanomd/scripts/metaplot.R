@@ -125,7 +125,7 @@ auto_meta_plot <- function(input_path, output_path, prefix, mod_type = "m6A") {
         )
     # group plot
     legendBaseModel::rbind_merge(sample_all, "dist_measures") %>% 
-        plot_metagene_Rd(., output_path, paste0(prefix, "_group"))
+        plot_metagene_Rd(., output_path, paste0(prefix, "_group"), mod_type)
     # END
     return("sucess")},
     error = function(e){print(e$message);message(return("failled"))})
