@@ -63,9 +63,8 @@ def matrix(
                         run_command(f"Rscript {plot_script}/isoform.R -i {WKD}/{output_count} -o {WKD}/{output_plot} -p {prefix} -s {species} -t {type} -n {split_num}")
             elif type == "meta":
                 output_plot = f"meta_plots"
-                for fileType in ["m6A", "m5C", "psi", "AtoI"]:
-                    output_plot = f"{prefix}_{fileType}_metagene.pdf"
-                    if not check_path_exists(output_plot):
+                if not check_path_exists(output_plot):
+                    for fileType in ["m6A", "m5C", "psi", "AtoI"]:
                         if docker:
                             run_command(f"docker run -v {WKD}:/output -v {plot_script}:/scripts -w /output legendzdy/rbase:1.0.0 Rscript /scripts/metaplot.R -i /output -o /output/{output_plot} -p {prefix} -t {fileType}".split())
                         else:

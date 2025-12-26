@@ -120,7 +120,7 @@ auto_meta_plot <- function(input_path, output_path, prefix, mod_type = "m6A") {
         ) %>% 
         dplyr::mutate(
             output_plot = output_path,
-            prefix_plot = paste0(prefix, group),
+            prefix_plot = paste0(prefix, "_", group),
             plot_meta <- purrr::pmap(list(dist_measures, output_plot, prefix_plot, type), plot_metagene_Rd)
         )
     # END
