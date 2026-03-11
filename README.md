@@ -9,7 +9,7 @@
     - [Usage](#usage)
     - [nanomd count](#nanomd-count)
     - [Usage](#usage)
-    - [nanomd ployA](#nanomd-ploya)
+    - [nanomd polyA](#nanomd-ploya)
     - [Usage](#usage)
     - [nanomd matrix](#nanomd-matrix)
     - [Usage](#usage)
@@ -53,7 +53,7 @@ It is recommended to use the docker or conda environment to run the pipeline.
 nanomd.py is the main module of nanoMD, which includes the following sub-modules:
 - gene
 - count
-- ployA
+- polyA
 - matrix
 - detectMod
 - nascentRNA
@@ -70,17 +70,17 @@ nanomd.py is the main module of nanoMD, which includes the following sub-modules
 
 `nanomd count -i ../input/{}/pass.fq.gz -r ../reference/fasta/transcripts.fa -p {}`
 
-## nanomd ployA
+## nanomd polyA
 
 ## Usage
 
-`nanomd ployA -i ./pass.fq.gz --transcriptome=$ref -o . -p Ctrl-1`
+`nanomd polyA -i ./pass.fq.gz --transcriptome=$ref -o . -p Ctrl-1`
 
 ## nanomd matrix
 
 ## Usage
 
-`nanomd matrix -i "*_ployA.tsv" -c "WT1_ployA.tsv,WT2_ployA.tsv" -p ployA -s human -t ployA --docker`
+`nanomd matrix -i "*_polyA.tsv" -c "WT1_polyA.tsv,WT2_polyA.tsv" -p polyA -s human -t polyA --docker`
 
 `nanomd matrix -i "*_quant" -c "NC1_quant,NC2_quant,NC3_quant,NC4_quant,NC5_quant" -p salmon -s human --docker`
 

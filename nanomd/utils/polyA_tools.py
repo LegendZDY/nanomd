@@ -107,36 +107,36 @@ def index_fastq(fast5_dir, summary_file, fastq):
     cmd = f"nanopolish index --directory={fast5_dir} --sequencing-summary={summary_file} {fastq}".split()
     run_command(cmd)
 
-def detect_ployA(fastq, bam, transcriptome, output_ploya, threads=8):
+def detect_polyA(fastq, bam, transcriptome, output_ploya, threads=8):
     """
-    Detect ployA using nanopolish ployA.
+    Detect polyA using nanopolish polyA.
 
     Args:
         fastq (str): The path to the fastq file.
         bam (str): The path to the bam file.
         transcriptome (str): The path to the transcriptome file.
-        output_ploya (str): The path to the output ployA file.
+        output_ploya (str): The path to the output polyA file.
         threads (int): The number of threads to use.
 
     Examples:
-        detect_ployA("fastq.gz", "bam", "transcriptome.fa", "ployA.tsv", threads=8)
+        detect_polyA("fastq.gz", "bam", "transcriptome.fa", "polyA.tsv", threads=8)
     """
 
-    cmd = f"nanopolish ployA --threads={threads} --reads={fastq} --bam={bam} --genome={transcriptome} > {output_ploya}"
+    cmd = f"nanopolish polyA --threads={threads} --reads={fastq} --bam={bam} --genome={transcriptome} > {output_ploya}"
     run_command(cmd, use_shell=True)
 
-class ployADetector:
+class polyADetector:
     """
-    ployA detector.
+    polyA detector.
 
     Args:
         bam_path (str): The path to the bam file.
         output_path (str): The path to the output file.
-        min_a_length (int): The minimum length of ployA.
-        max_non_a (int): The maximum number of non-A bases allowed in ployA.
+        min_a_length (int): The minimum length of polyA.
+        max_non_a (int): The maximum number of non-A bases allowed in polyA.
     
     Examples:
-        detector = ployADetector("bam", "ployA.tsv", min_a_length=12, max_non_a=3)
+        detector = polyADetector("bam", "polyA.tsv", min_a_length=12, max_non_a=3)
         detector.analyze()
     """
     def __init__(self, bam_path, output_path, min_a_length=12, max_non_a=3):
@@ -155,7 +155,7 @@ class ployADetector:
                     'N': 'N', 'n': 'n'}
         return ''.join(complement.get(base, base) for base in reversed(seq)) # type: ignore
     
-    def find_longest_ployA(self, seq):
+    def find_longest_polyA(self, seq):
         """
         Use sliding window algorithm to find the longest consecutive A sequence, allowing a few non-A bases.
         """
@@ -190,9 +190,9 @@ class ployADetector:
         
         a_ratio = a_count_in_max / max_length if max_length > 0 else 0.0
         
-        ployA_seq = seq[best_start:best_end+1] if max_length > 0 else ""
+        polyA_seq = seq[best_start:best_end+1] if max_length > 0 else ""
         
-        return ployA_seq, max_length, a_count_in_max, a_ratio
+        return polyA_seq, max_length, a_count_in_max, a_ratio
     
     def process_read(self, read):
         if read.is_unmapped or not read.cigartuples:
@@ -225,38 +225,38 @@ class ployADetector:
         else:
             return None
         
-        ployA_seq, total_length, a_count, a_ratio = self.find_longest_ployA(target_seq)
+        polyA_seq, total_length, a_count, a_ratio = self.find_longest_polyA(target_seq)
         
-        has_ployA = a_count >= self.min_a_length and a_ratio >= 0.75
+        has_polyA = a_count >= self.min_a_length and a_ratio >= 0.75
         
         return {
             "read_name": read_name,
             "ref_name": read.reference_name,
             "strand": "+" if flag == 0 else "-",
-            "ployA_seq": ployA_seq,
-            "ployA_region_length": total_length,
+            "polyA_seq": polyA_seq,
+            "polyA_region_length": total_length,
             "a_count": a_count,
             "a_ratio": a_ratio,
-            "has_ployA": "Yes" if has_ployA else "No"
+            "has_polyA": "Yes" if has_polyA else "No"
         }
     
     def analyze(self):
         with open(self.output_path, 'w') as fout:
-            fout.write("readName\trefName\tstrand\tployASeq\tployALength\tACount\tARatio\tHasployA\n")
+            fout.write("readName\trefName\tstrand\tpolyASeq\tpolyALength\tACount\tARatio\tHaspolyA\n")
             with pysam.AlignmentFile(self.bam_path, "rb") as bam:
                 for read in bam:
                     result = self.process_read(read)
                     if result:
-                        if result["has_ployA"] == "Yes":
+                        if result["has_polyA"] == "Yes":
                             fout.write("\t".join([
                                 result["read_name"],
                                 result["ref_name"],
                                 result["strand"],
-                                result["ployA_seq"],
-                                str(result["ployA_region_length"]),
+                                result["polyA_seq"],
+                                str(result["polyA_region_length"]),
                                 str(result["a_count"]),
                                 f"{result['a_ratio']:.3f}",
-                                result["has_ployA"]
+                                result["has_polyA"]
                             ]) + "\n")
 
 def drop_outliers(df, dep_col, handle_nan='keep'):
@@ -299,9 +299,9 @@ def drop_outliers(df, dep_col, handle_nan='keep'):
     
     return df[mask]
 
-def ployA_matrix_generate(input_files, control_filess_names, output_matrix, output_lengths):
+def polyA_matrix_generate(input_files, control_filess_names, output_matrix, output_lengths):
     """
-    Generate ployA matrix and ployA lengths file.
+    Generate polyA matrix and polyA lengths file.
     """
     if isinstance(input_files, str):
         sorted_files = sorted(glob.glob(input_files))
@@ -322,11 +322,11 @@ def ployA_matrix_generate(input_files, control_filess_names, output_matrix, outp
     all_counts = {}
     sample_names = []
     # 创建一个空的DataFrame存储所有结果
-    all_ployA_lengths = pd.DataFrame()
+    all_polyA_lengths = pd.DataFrame()
     
     # Process each sample file
     for sample_file in input_files:
-        sample_name = os.path.basename(sample_file).split('.')[0].replace('_ployA', '')
+        sample_name = os.path.basename(sample_file).split('.')[0].replace('_polyA', '')
         sample_names.append(sample_name)
         condition = sample_name
         
@@ -336,11 +336,11 @@ def ployA_matrix_generate(input_files, control_filess_names, output_matrix, outp
         # Count occurrences of each refName
         ref_counts = df['refName'].value_counts().to_dict()
         all_counts[sample_name] = ref_counts
-        # ployA lengths
-        df_temp = df[['ployALength']].copy()
+        # polyA lengths
+        df_temp = df[['polyALength']].copy()
         df_temp['condition'] = condition
-        df_temp = df_temp.rename(columns={'ployALength': 'measurement'})
-        all_ployA_lengths = pd.concat([all_ployA_lengths, df_temp], ignore_index=True)
+        df_temp = df_temp.rename(columns={'polyALength': 'measurement'})
+        all_polyA_lengths = pd.concat([all_polyA_lengths, df_temp], ignore_index=True)
     
     # Create a set of all unique refNames
     all_refnames = set()
@@ -357,7 +357,7 @@ def ployA_matrix_generate(input_files, control_filess_names, output_matrix, outp
     # Save the matrix to output file
     matrix.to_csv(output_matrix, sep='\t')
 
-    # ployA lengths
-    all_ployA_lengths = all_ployA_lengths[['condition', 'measurement']]
-    all_ployA_lengths = drop_outliers(all_ployA_lengths, 'measurement')
-    all_ployA_lengths.to_csv(output_lengths, sep='\t', index=False)
+    # polyA lengths
+    all_polyA_lengths = all_polyA_lengths[['condition', 'measurement']]
+    all_polyA_lengths = drop_outliers(all_polyA_lengths, 'measurement')
+    all_polyA_lengths.to_csv(output_lengths, sep='\t', index=False)

@@ -5,21 +5,21 @@ from rich.progress import Progress, SpinnerColumn, TextColumn
 from pathlib import Path
 from basebio import check_path_exists, run_command
 from ..utils.quantify import matrix_generate
-from ..utils.ployA_tools import ployA_matrix_generate
+from ..utils.polyA_tools import polyA_matrix_generate
 
 app = typer.Typer()
 
 @app.command()
 def matrix(
-    inputs: Annotated[str, typer.Option("--inputs", "-i", help="Regular matching pattern for salmon results directories or ployA files, such as 'path/to/*_quant' or 'path/to/*ployA.tsv'.")],
-    control_names: Annotated[str, typer.Option("--control_names", "-c", help="Control sample dir name or ployA file name separated by comma, such as 'control1_quant,control2_quant,control3_quant' or 'control1_ployA.tsv,control2_ployA.tsv,control3_ployA.tsv'.")],
+    inputs: Annotated[str, typer.Option("--inputs", "-i", help="Regular matching pattern for salmon results directories or polyA files, such as 'path/to/*_quant' or 'path/to/*polyA.tsv'.")],
+    control_names: Annotated[str, typer.Option("--control_names", "-c", help="Control sample dir name or polyA file name separated by comma, such as 'control1_quant,control2_quant,control3_quant' or 'control1_polyA.tsv,control2_polyA.tsv,control3_polyA.tsv'.")],
     prefix: Annotated[str, typer.Option("--prefix", "-p", help="Prefix for output file.")] = "prefix",
     species: Annotated[str, typer.Option("--species", "-s", help="Species name. [human|mouse|rat]")] = "human",
-    type: Annotated[str, typer.Option("--type", "-t", help="Input count file type, either 'salmon', 'ployA', 'meta'.")] = "salmon",
+    type: Annotated[str, typer.Option("--type", "-t", help="Input count file type, either 'salmon', 'polyA', 'meta'.")] = "salmon",
     docker: Annotated[bool, typer.Option("--docker", help="Whether to run in docker container to plots.")] = False,
     ):
     """
-    Generate matrix with salmon results or ployA files.
+    Generate matrix with salmon results or polyA files.
     """
     
     with Progress(
@@ -50,11 +50,11 @@ def matrix(
                         run_command(f"docker run -v {WKD}:/output -v {plot_script}:/scripts -w /output legendzdy/rbase:1.0.0 Rscript /scripts/isoform.R -i /output/{output_count} -o /output/{output_plot} -p {prefix} -s {species} -t {type} -n {split_num}".split())
                     else:
                         run_command(f"Rscript {plot_script}/isoform.R -i {WKD}/{output_count} -o {WKD}/{output_plot} -p {prefix} -s {species} -t {type} -n {split_num}")
-            elif type == "ployA":
-                output_count = "matrix_ployA.tsv"
-                output_lengths = "ployA_lengths.tsv"
+            elif type == "polyA":
+                output_count = "matrix_polyA.tsv"
+                output_lengths = "polyA_lengths.tsv"
                 if not check_path_exists(output_count) or not check_path_exists(output_lengths):
-                    ployA_matrix_generate(input_files=inputs, control_filess_names=control_names, output_matrix=output_count, output_lengths=output_lengths)
+                    polyA_matrix_generate(input_files=inputs, control_filess_names=control_names, output_matrix=output_count, output_lengths=output_lengths)
                 output_plot = f"matrix_plots"
                 if not check_path_exists(output_plot):
                     if docker:
