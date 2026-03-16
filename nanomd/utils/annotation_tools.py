@@ -129,3 +129,106 @@ def annotate_isoform_events(input_df: pd.DataFrame, gene_map: Dict[str, str]) ->
     input_df.insert(isoform_idx + 2, 'gene_name', gene_names)  # type: ignore
     
     return input_df
+
+
+def annotate_single_file(input_file: str, gene_map: dict, output_file: str = "", progress=None) -> str:
+    """
+    Annotate a single TSV file and return output path.
+    """
+    from pathlib import Path
+    import pandas as pd
+    import os
+    
+    if not output_file:
+        input_path = Path(input_file)
+        output_file = str(input_path.with_suffix('.annotated.tsv'))
+    
+    if progress:
+        progress.add_task(description=f"Processing {os.path.basename(input_file)}...", total=None)
+    
+    # Ensure output directory exists
+    output_path = Path(output_file)
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    
+    df = pd.read_csv(input_file, sep='\t')
+    df = annotate_isoform_events(df, gene_map)
+    df.to_csv(output_file, sep='\t', index=False)
+    
+    return output_file
+
+
+def count_inclusion_exclusion(df: pd.DataFrame) -> tuple[int, int]:
+    """
+    Count inclusion and exclusion events based on feature_id prefix.
+    Returns (inclusion_count, exclusion_count)
+    """
+    if 'feature_id' not in df.columns:
+        return 0, 0
+    inclusion = df['feature_id'].str.startswith('inclusion_').sum()
+    exclusion = df['feature_id'].str.startswith('exclusion_').sum()
+    return inclusion, exclusion
+
+
+def plot_splicing_counts(counts_dict: dict, output_prefix: str):
+    """
+    Generate stacked bar chart for inclusion/exclusion counts across splicing types.
+    Horizontal stacked bar chart with Y-axis as splicing types and X-axis as counts.
+    counts_dict: {splicing_type: (inclusion_count, exclusion_count)}
+    """
+    try:
+        import matplotlib.pyplot as plt
+        import numpy as np
+    except ImportError:
+        import sys
+        print("Warning: matplotlib not installed. Skipping plot generation.", file=sys.stderr)
+        return
+    
+    # Sort types in order: ES, Alt5, Alt3, IR (if present)
+    type_order = ['ES', 'Alt5', 'Alt3', 'IR']
+    types = []
+    for t in type_order:
+        if t in counts_dict:
+            types.append(t)
+    # Add any remaining types not in predefined order
+    for t in counts_dict.keys():
+        if t not in types:
+            types.append(t)
+    
+    inclusion_counts = [counts_dict[t][0] for t in types]
+    exclusion_counts = [counts_dict[t][1] for t in types]
+    
+    y = np.arange(len(types))
+    height = 0.6
+    
+    fig, ax = plt.subplots(figsize=(10, 6))
+    ax.barh(y, inclusion_counts, height, label='Inclusion', color='#1f77b4')
+    ax.barh(y, exclusion_counts, height, left=inclusion_counts, label='Exclusion', color='#ff7f0e')
+    
+    ax.set_xlabel('Count')
+    ax.set_ylabel('Splicing Type')
+    ax.set_title('Inclusion/Exclusion Events by Splicing Type')
+    ax.set_yticks(y)
+    ax.set_yticklabels(types)
+    ax.legend()
+    
+    # Add value labels on bars
+    for i, (inc, exc) in enumerate(zip(inclusion_counts, exclusion_counts)):
+        total = inc + exc
+        if total > 0:
+            # Inclusion label
+            if inc > 0:
+                ax.text(inc/2, i, str(inc), ha='center', va='center', color='white', fontweight='bold')
+            # Exclusion label
+            if exc > 0:
+                ax.text(inc + exc/2, i, str(exc), ha='center', va='center', color='white', fontweight='bold')
+    
+    plt.tight_layout()
+    
+    plot_path = f"{output_prefix}_splicing_counts.png"
+    # Ensure output directory exists
+    from pathlib import Path
+    plot_path_obj = Path(plot_path)
+    plot_path_obj.parent.mkdir(parents=True, exist_ok=True)
+    plt.savefig(plot_path, dpi=300)
+    plt.close()
+    print(f"Plot saved to: {plot_path}")
