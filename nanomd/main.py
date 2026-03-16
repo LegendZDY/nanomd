@@ -6,6 +6,7 @@ from .modules.polyA import polyA
 from .modules.detectMod import detectMod
 from .modules.isoformAS import isoformAS
 from .modules.nascentRNA import nascentRNA
+from .modules.isoformAnno import isoformAnno
 
 app = typer.Typer(add_completion=False)
 
@@ -22,6 +23,7 @@ app.command(name="matrix")(matrix)
 app.command(name="isoformAS")(isoformAS)
 app.command(name="detectMod")(detectMod)
 app.command(name="nascentRNA")(nascentRNA)
+app.command(name="isoformAnno")(isoformAnno)
 
 
 if __name__ == "__main__":
