@@ -175,11 +175,11 @@ def plot_splicing_counts(counts_dict: dict, output_prefix: str):
     Horizontal stacked bar chart with Y-axis as splicing types and X-axis as counts.
     counts_dict: {splicing_type: (inclusion_count, exclusion_count)}
     """
+    import sys
     try:
         import matplotlib.pyplot as plt
         import numpy as np
     except ImportError:
-        import sys
         print("Warning: matplotlib not installed. Skipping plot generation.", file=sys.stderr)
         return
     
@@ -223,11 +223,44 @@ def plot_splicing_counts(counts_dict: dict, output_prefix: str):
     
     plt.tight_layout()
     
-    plot_path = f"{output_prefix}_splicing_counts.png"
     # Ensure output directory exists
     from pathlib import Path
-    plot_path_obj = Path(plot_path)
-    plot_path_obj.parent.mkdir(parents=True, exist_ok=True)
-    plt.savefig(plot_path, dpi=300)
+    plot_dir = Path(output_prefix).parent
+    plot_dir.mkdir(parents=True, exist_ok=True)
+    
+    base_path = f"{output_prefix}_splicing_counts"
+    saved_files = []
+    
+    # Save PNG (default format)
+    try:
+        png_path = f"{base_path}.png"
+        plt.savefig(png_path, dpi=300)
+        saved_files.append(png_path)
+    except Exception as e:
+        print(f"Warning: Could not save PNG format: {e}", file=sys.stderr)
+    
+    # Save PDF
+    try:
+        pdf_path = f"{base_path}.pdf"
+        plt.savefig(pdf_path, dpi=300)
+        saved_files.append(pdf_path)
+    except Exception as e:
+        print(f"Warning: Could not save PDF format: {e}", file=sys.stderr)
+    
+    # Try to save TIFF (requires pillow)
+    try:
+        tiff_path = f"{base_path}.tiff"
+        plt.savefig(tiff_path, dpi=300)
+        saved_files.append(tiff_path)
+    except Exception as e:
+        print(f"Warning: Could not save TIFF format: {e}", file=sys.stderr)
+        print("Tip: Install pillow package for TIFF support: pip install pillow", file=sys.stderr)
+    
     plt.close()
-    print(f"Plot saved to: {plot_path}")
+    
+    if saved_files:
+        print(f"Plots saved to:")
+        for file_path in saved_files:
+            print(f"  {file_path}")
+    else:
+        print("Warning: No plot formats were successfully saved.", file=sys.stderr)
