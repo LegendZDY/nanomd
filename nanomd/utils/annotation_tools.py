@@ -395,16 +395,14 @@ def plot_splicing_counts(counts_dict: dict, output_prefix: str):
     ax.set_yticklabels(types)
     ax.legend()
     
-    # Add value labels on bars
+    # Add total labels on bars (count and percentage)
+    total_all = sum(inclusion_counts) + sum(exclusion_counts)
     for i, (inc, exc) in enumerate(zip(inclusion_counts, exclusion_counts)):
         total = inc + exc
         if total > 0:
-            # Inclusion label
-            if inc > 0:
-                ax.text(inc/2, i, str(inc), ha='center', va='center', color='white', fontweight='bold')
-            # Exclusion label
-            if exc > 0:
-                ax.text(inc + exc/2, i, str(exc), ha='center', va='center', color='white', fontweight='bold')
+            percentage = (total / total_all) * 100 if total_all > 0 else 0
+            label = f"{total} ({percentage:.1f}%)"
+            ax.text(total/2, i, label, ha='center', va='center', color='black', fontweight='bold')
     
     plt.tight_layout()
     
