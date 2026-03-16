@@ -52,8 +52,8 @@ def isoformAnno(
     ) as progress:
         try:
             progress.add_task(description="Loading GTF annotation...", total=None)
-            gene_map = parse_gtf(gtf)
-            progress.add_task(description=f"Loaded {len(gene_map)} gene mappings", total=None)
+            gene_map, transcript_map, gene_coords = parse_gtf(gtf)
+            progress.add_task(description=f"Loaded {len(gene_map)} gene mappings, {len(transcript_map)} transcript mappings", total=None)
             
             # Process each file
             output_files = []
@@ -86,7 +86,7 @@ def isoformAnno(
                         output_file = str(input_path.with_suffix('.annotated.tsv'))
                 
                 # Annotate the file
-                annotated_path = annotate_single_file(input_file, gene_map, output_file, progress)
+                annotated_path = annotate_single_file(input_file, gene_map, transcript_map, gene_coords, output_file, progress)
                 output_files.append(annotated_path)
                 
                 # Count inclusion/exclusion
