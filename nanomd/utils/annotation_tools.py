@@ -183,8 +183,7 @@ def plot_splicing_counts(counts_dict: dict, output_prefix: str):
         print("Warning: matplotlib not installed. Skipping plot generation.", file=sys.stderr)
         return
     
-    # Sort types in order: ES, Alt5, Alt3, IR (if present)
-    type_order = ['ES', 'Alt5', 'Alt3', 'IR']
+    type_order = ['IR', 'Alt3', 'Alt5', 'ES']
     types = []
     for t in type_order:
         if t in counts_dict:
@@ -201,12 +200,12 @@ def plot_splicing_counts(counts_dict: dict, output_prefix: str):
     height = 0.6
     
     fig, ax = plt.subplots(figsize=(10, 6))
-    ax.barh(y, inclusion_counts, height, label='Inclusion', color='#1f77b4')
-    ax.barh(y, exclusion_counts, height, left=inclusion_counts, label='Exclusion', color='#ff7f0e')
+    ax.barh(y, inclusion_counts, height, label='Inclusion', color='#DD95B9')
+    ax.barh(y, exclusion_counts, height, left=inclusion_counts, label='Exclusion', color='#6A90CA')
     
-    ax.set_xlabel('Count')
-    ax.set_ylabel('Splicing Type')
-    ax.set_title('Inclusion/Exclusion Events by Splicing Type')
+    ax.set_xlabel('Count', fontsize=14)
+    ax.set_ylabel('Splicing Type', fontsize=14)
+    ax.set_title('Inclusion/Exclusion Events by Splicing Type', fontsize=16)
     ax.set_yticks(y)
     ax.set_yticklabels(types)
     ax.legend()
