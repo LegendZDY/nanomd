@@ -97,8 +97,14 @@ class form_reads_get_modifications:
                         
                         namelist = name.split("\t")
                         id = namelist[0].split("@")[-1]
-                        MMtagList = namelist[-2].split("MM:Z:")[-1].split(";")
-                        MLtag = namelist[-1].split(",")[1:]
+                        # 从 FASTQ 头中查找 MM:Z 和 ML:B 标签（不依赖固定位置）
+                        MMtagList = []
+                        MLtag = []
+                        for item in namelist:
+                            if item.startswith("MM:Z:"):
+                                MMtagList = item[len("MM:Z:"):].split(";")
+                            elif item.startswith("ML:B:C,"):
+                                MLtag = item[len("ML:B:C,"):].split(",")
                         mlstart = 0
                         for mm in MMtagList:
                             mmlen = len(mm.split(","))
